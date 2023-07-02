@@ -21,6 +21,8 @@ class RequestGet {
             body += chunk;
           });
           req.on('end', () => {
+            const bodyParsed = JSON.parse(body) as Data;
+            bodyParsed.id = randomUUID();
             const rs = createReadStream(DATA_FILE);
             let appendData = '';
             rs.on('readable', (chunk: Buffer) => {
@@ -32,8 +34,7 @@ class RequestGet {
               const fileDataParsed = JSON.parse(
                 appendData || '[]',
               ) as Array<Data>;
-              const bodyParsed = JSON.parse(body);
-              fileDataParsed.push(...bodyParsed);
+              fileDataParsed.push(bodyParsed);
               const ws = createWriteStream(DATA_FILE);
               ws.write(JSON.stringify(fileDataParsed));
             });
