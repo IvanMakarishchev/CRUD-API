@@ -6,9 +6,11 @@ export class DataService {
   addData(data: Data) {
     this.dataStorage.push(data);
   }
-  changeData(id: string, data: Data) {
-    const index = this.dataStorage.findIndex((user) => user.id === id);
+  changeData(index: number, data: Data) {
     this.dataStorage[index] = { ...this.dataStorage[index], ...data };
+  }
+  removeData(index: number) {
+    this.dataStorage.splice(index, 1);
   }
   getData() {
     return this.dataStorage;

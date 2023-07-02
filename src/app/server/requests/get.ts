@@ -16,7 +16,6 @@ class RequestGet {
         const urlEnd =
           requestUrl && requestUrl.slice(requestUrl.lastIndexOf('/') + 1);
         const userId = urlEnd !== 'users' && urlEnd;
-        console.log(userId);
         if (requestMethod === 'GET') {
           const data = this.dataStotage.getData();
           urlEnd === 'users'
@@ -41,7 +40,7 @@ class RequestGet {
                   console.log(user);
                 } else {
                   req.statusCode = 520;
-                  console.log(
+                  console.error(
                     `Status code ${req.statusCode}: Server is returning an unknown error.`,
                   );
                 }
@@ -54,22 +53,23 @@ class RequestGet {
           });
           req.on('end', () => {
             const bodyParsed = JSON.parse(body);
-            if (!isData(bodyParsed)) {
-              res.end(() => {
+            res.end(() => {
+              if (!isData(bodyParsed)) {
                 req.statusCode = 400;
-                console.log(
+                console.error(
                   `Status code ${req.statusCode}: Request body does not meet the requirements!`,
                 );
-              });
-            } else {
-              (<Data>bodyParsed).id = randomUUID();
-              this.dataStotage.addData(bodyParsed);
-              res.end(() => {
+              } else if (urlEnd !== 'users') {
+                req.statusCode = 400;
+                console.error(`Status code ${req.statusCode}: Bad Request`);
+              } else {
+                (<Data>bodyParsed).id = randomUUID();
+                this.dataStotage.addData(bodyParsed);
                 req.statusCode = 201;
                 console.log(`Status code ${req.statusCode}`);
                 console.log(this.dataStotage.getData());
-              });
-            }
+              }
+            });
           });
         }
         if (requestMethod === 'PUT') {
@@ -77,37 +77,68 @@ class RequestGet {
           req.on('data', (chunk) => {
             body += chunk;
           });
-          res.end(() => {
+          req.on('end', () => {
             const bodyParsed = JSON.parse(body);
-            if (!isData(bodyParsed)) {
-              res.end(() => {
+            res.end(() => {
+              if (!isData(bodyParsed)) {
                 req.statusCode = 400;
-                console.log(
+                console.error(
                   `Status code ${req.statusCode}: Request body does not meet the requirements!`,
                 );
-              });
-            } else {
-              const data = this.dataStotage.getData();
-              const user = data.find((el) => el.id === userId);
-              if (!(<string>userId)?.match(uuidReg)) {
+              } else if (urlEnd === 'users') {
                 req.statusCode = 400;
-                console.error(`Status code ${req.statusCode}: Invalid uuid!`);
-              } else if (!user) {
-                req.statusCode = 404;
-                console.error(
-                  `Status code ${req.statusCode}: User ${userId} not found!`,
-                );
-              } else if (user) {
-                req.statusCode = 200;
-                console.log(`Status code ${req.statusCode}`);
-                this.dataStotage.changeData(<string>userId, bodyParsed);
-                console.log(this.dataStotage.getData());
+                console.error(`Status code ${req.statusCode}: Bad Request`);
               } else {
-                req.statusCode = 520;
-                console.log(
-                  `Status code ${req.statusCode}: Server is returning an unknown error.`,
-                );
+                const data = this.dataStotage.getData();
+                const index = data.findIndex((user) => user.id === userId);
+                if (!(<string>userId)?.match(uuidReg)) {
+                  req.statusCode = 400;
+                  console.error(`Status code ${req.statusCode}: Invalid uuid!`);
+                } else if (index < 0) {
+                  req.statusCode = 404;
+                  console.error(
+                    `Status code ${req.statusCode}: User ${userId} not found!`,
+                  );
+                } else if (index >= 0) {
+                  req.statusCode = 200;
+                  console.log(`Status code ${req.statusCode}`);
+                  this.dataStotage.changeData(index, bodyParsed);
+                  console.log(this.dataStotage.getData());
+                } else {
+                  req.statusCode = 520;
+                  console.error(
+                    `Status code ${req.statusCode}: Server is returning an unknown error.`,
+                  );
+                }
               }
+            });
+          });
+        }
+        if (requestMethod === 'DELETE') {
+          const data = this.dataStotage.getData();
+          res.end(() => {
+            const userIndex = data.findIndex((el) => el.id === userId);
+            if (urlEnd === 'users') {
+              req.statusCode = 400;
+              console.error(`Status code ${req.statusCode}: Bad Request`);
+            } else if (!(<string>userId)?.match(uuidReg)) {
+              req.statusCode = 400;
+              console.error(`Status code ${req.statusCode}: Invalid uuid!`);
+            } else if (userIndex < 0) {
+              req.statusCode = 404;
+              console.error(
+                `Status code ${req.statusCode}: User ${userId} not found!`,
+              );
+            } else if (userIndex >= 0) {
+              this.dataStotage.removeData(userIndex);
+              req.statusCode = 204;
+              console.log(`Status code ${req.statusCode}`);
+              console.log(`User ${userId} removed.`);
+            } else {
+              req.statusCode = 520;
+              console.error(
+                `Status code ${req.statusCode}: Server is returning an unknown error.`,
+              );
             }
           });
         }
