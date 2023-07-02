@@ -1,20 +1,35 @@
 import { createReadStream, createWriteStream } from 'fs';
 import { serverService } from '../../utils/serverService.ts';
-import path from 'path';
-// import { PORT, serverURL } from '../../constants/environment.ts';
-// import * as http from 'http';
-import * as url from 'url';
 import { DATA_FILE } from '../../constants/constants.ts';
 import { Data } from '../../interfaces/data.ts';
 import { randomUUID } from 'crypto';
+import { DataService } from '../../utils/dataService.ts';
+import { Readable } from 'stream';
 
 class RequestGet {
+  private dataStotage = new DataService();
+
   processGet() {
     const server = serverService.getServer();
     if (server !== undefined) {
       server.on('request', (req, res) => {
         const requestUrl = req.url;
         const requestMethod = req.method;
+        if (requestMethod === 'GET') {
+          requestUrl &&
+          requestUrl.slice(requestUrl.lastIndexOf('/') + 1) === 'users'
+            ? res.end(() => {
+                console.log(this.dataStotage.getData());
+              })
+            : res.end(() => {
+                const userId = requestUrl
+                  ? requestUrl.slice(requestUrl.lastIndexOf('/') + 1)
+                  : undefined;
+                console.log(
+                  this.dataStotage.getData().find((el) => el.id === userId),
+                );
+              });
+        }
         if (requestMethod === 'POST') {
           let body = '';
           req.on('data', (chunk) => {
@@ -23,20 +38,9 @@ class RequestGet {
           req.on('end', () => {
             const bodyParsed = JSON.parse(body) as Data;
             bodyParsed.id = randomUUID();
-            const rs = createReadStream(DATA_FILE);
-            let appendData = '';
-            rs.on('readable', (chunk: Buffer) => {
-              while (null !== (chunk = rs.read())) {
-                appendData += chunk;
-              }
-            });
-            rs.on('end', () => {
-              const fileDataParsed = JSON.parse(
-                appendData || '[]',
-              ) as Array<Data>;
-              fileDataParsed.push(bodyParsed);
-              const ws = createWriteStream(DATA_FILE);
-              ws.write(JSON.stringify(fileDataParsed));
+            this.dataStotage.addData(bodyParsed);
+            res.end(() => {
+              console.log(this.dataStotage.getData());
             });
           });
         }
