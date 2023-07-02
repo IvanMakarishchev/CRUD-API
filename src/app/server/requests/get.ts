@@ -1,11 +1,8 @@
-import { createReadStream, createWriteStream } from 'fs';
 import { serverService } from '../../utils/serverService.ts';
-import { DATA_FILE } from '../../constants/constants.ts';
+import { uuidReg } from '../../constants/constants.ts';
 import { Data } from '../../interfaces/data.ts';
 import { randomUUID } from 'crypto';
 import { DataService } from '../../utils/dataService.ts';
-import { Readable } from 'stream';
-
 class RequestGet {
   private dataStotage = new DataService();
 
@@ -16,18 +13,37 @@ class RequestGet {
         const requestUrl = req.url;
         const requestMethod = req.method;
         if (requestMethod === 'GET') {
+          const data = this.dataStotage.getData();
           requestUrl &&
           requestUrl.slice(requestUrl.lastIndexOf('/') + 1) === 'users'
             ? res.end(() => {
-                console.log(this.dataStotage.getData());
+                req.statusCode = 200;
+                console.log(`Status code ${req.statusCode}`);
+                console.log(data);
               })
             : res.end(() => {
                 const userId = requestUrl
                   ? requestUrl.slice(requestUrl.lastIndexOf('/') + 1)
                   : undefined;
-                console.log(
-                  this.dataStotage.getData().find((el) => el.id === userId),
-                );
+                const user = data.find((el) => el.id === userId);
+                if (!userId?.match(uuidReg)) {
+                  req.statusCode = 400;
+                  console.error(
+                    `Status code ${req.statusCode}: Invalid uuid!`,
+                  );
+                } else if (!user) {
+                  req.statusCode = 404;
+                  console.error(
+                    `Status code ${req.statusCode}: User ${userId} not found!`,
+                  );
+                } else if (user) {
+                  req.statusCode = 200;
+                  console.log(`Status code ${req.statusCode}`);
+                  console.log(data.find((el) => el.id === userId));
+                } else {
+                  req.statusCode = 520;
+                  console.log(`Status code ${req.statusCode}: Server is returning an unknown error.`);
+                }
               });
         }
         if (requestMethod === 'POST') {
@@ -44,12 +60,6 @@ class RequestGet {
             });
           });
         }
-        res.end(() => {
-          if (requestUrl !== '/api/users') {
-            res.statusCode = 404;
-          }
-          console.log(res.statusCode);
-        });
       });
     }
   }

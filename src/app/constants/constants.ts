@@ -1,4 +1,1 @@
-import path from 'path';
-
-export const WORK_DIR = process.cwd();
-export const DATA_FILE = path.join(WORK_DIR, 'src', 'app', 'data', 'data.json');
+export const uuidReg = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
