@@ -3,6 +3,7 @@ import { uuidReg } from '../../constants/constants.ts';
 import { Data } from '../../interfaces/data.ts';
 import { randomUUID } from 'crypto';
 import { DataService } from '../../utils/dataService.ts';
+import { isData } from '../../utils/checkDataType.ts';
 class RequestGet {
   private dataStotage = new DataService();
 
@@ -28,9 +29,7 @@ class RequestGet {
                 const user = data.find((el) => el.id === userId);
                 if (!userId?.match(uuidReg)) {
                   req.statusCode = 400;
-                  console.error(
-                    `Status code ${req.statusCode}: Invalid uuid!`,
-                  );
+                  console.error(`Status code ${req.statusCode}: Invalid uuid!`);
                 } else if (!user) {
                   req.statusCode = 404;
                   console.error(
@@ -42,7 +41,9 @@ class RequestGet {
                   console.log(data.find((el) => el.id === userId));
                 } else {
                   req.statusCode = 520;
-                  console.log(`Status code ${req.statusCode}: Server is returning an unknown error.`);
+                  console.log(
+                    `Status code ${req.statusCode}: Server is returning an unknown error.`,
+                  );
                 }
               });
         }
@@ -52,12 +53,23 @@ class RequestGet {
             body += chunk;
           });
           req.on('end', () => {
-            const bodyParsed = JSON.parse(body) as Data;
-            bodyParsed.id = randomUUID();
-            this.dataStotage.addData(bodyParsed);
-            res.end(() => {
-              console.log(this.dataStotage.getData());
-            });
+            const bodyParsed = JSON.parse(body);
+            if (!isData(bodyParsed)) {
+              res.end(() => {
+                req.statusCode = 400;
+                console.log(
+                  `Status code ${req.statusCode}: Request body does not meet the requirements!`,
+                );
+              });
+            } else {
+              (<Data>bodyParsed).id = randomUUID();
+              this.dataStotage.addData(bodyParsed);
+              res.end(() => {
+                req.statusCode = 201;
+                console.log(`Status code ${req.statusCode}`);
+                console.log(this.dataStotage.getData());
+              });
+            }
           });
         }
       });
