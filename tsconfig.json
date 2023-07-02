@@ -13,20 +13,17 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "moduleResolution": "node",
     "importHelpers": true,
+    "esModuleInterop": true,
     "target": "es2020",
     "module": "es2020",
     "lib": [
       "es2020",
       "dom"
     ]
-  },
-  "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
   },
   "ts-node": {
     "esm": true,
