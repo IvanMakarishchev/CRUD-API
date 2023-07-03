@@ -5,7 +5,7 @@
 Run command in your terminal:
 
 ```
-git clone -b develop https://github.com/VKTRenokh/node-crud-api.git
+git clone -b develop https://github.com/IvanMakarishchev/CRUD-API/tree/develop
 ```
 
 ---
