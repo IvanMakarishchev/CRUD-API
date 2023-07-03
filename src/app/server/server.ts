@@ -18,4 +18,4 @@ export class CreateServer {
   };
 }
 
-export const createServer = new CreateServer(Number(process.env['SERVER_PORT']));
+export const createServer = new CreateServer(Number(process.env['PORT']));
