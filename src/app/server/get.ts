@@ -1,10 +1,9 @@
-import { serverService } from '../../utils/serverService.ts';
-import { urlReg, uuidReg } from '../../constants/constants.ts';
-import { Data } from '../../interfaces/data.ts';
+import { serverService } from '../utils/serverService.ts';
+import { urlReg, uuidReg } from '../constants/constants.ts';
+import { Data } from '../interfaces/data.ts';
 import { randomUUID } from 'crypto';
-import { DataService } from '../../utils/dataService.ts';
-import { isData } from '../../utils/checkDataType.ts';
-import url, { URL } from 'url';
+import { DataService } from '../utils/dataService.ts';
+import { isData } from '../utils/checkDataType.ts';
 class RequestGet {
   private dataStotage = new DataService();
 

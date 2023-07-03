@@ -1,7 +1,7 @@
 import http from 'http';
 import dotenv from 'dotenv';
 import { serverService } from '../utils/serverService.ts';
-import { getRequest } from './requests/get.ts';
+import { getRequest } from './get.ts';
 dotenv.config();
 
 export class CreateServer {
