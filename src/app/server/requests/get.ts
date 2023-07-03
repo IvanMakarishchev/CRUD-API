@@ -1,9 +1,10 @@
 import { serverService } from '../../utils/serverService.ts';
-import { uuidReg } from '../../constants/constants.ts';
+import { urlReg, uuidReg } from '../../constants/constants.ts';
 import { Data } from '../../interfaces/data.ts';
 import { randomUUID } from 'crypto';
 import { DataService } from '../../utils/dataService.ts';
 import { isData } from '../../utils/checkDataType.ts';
+import url, { URL } from 'url';
 class RequestGet {
   private dataStotage = new DataService();
 
@@ -26,7 +27,10 @@ class RequestGet {
               })
             : res.end(() => {
                 const user = data.find((el) => el.id === userId);
-                if (!(<string>userId)?.match(uuidReg)) {
+                if (!requestUrl?.match(urlReg)) {
+                  req.statusCode = 404;
+                  console.error(`Status code ${req.statusCode}: Can't process your request. Unknown url.`);
+                } else if (!(<string>userId)?.match(uuidReg)) {
                   req.statusCode = 400;
                   console.error(`Status code ${req.statusCode}: Invalid uuid!`);
                 } else if (!user) {
@@ -54,7 +58,10 @@ class RequestGet {
           req.on('end', () => {
             const bodyParsed = JSON.parse(body);
             res.end(() => {
-              if (!isData(bodyParsed)) {
+              if (!requestUrl?.match(urlReg)) {
+                req.statusCode = 404;
+                console.error(`Status code ${req.statusCode}: Can't process your request. Unknown url.`);
+              } else if (!isData(bodyParsed)) {
                 req.statusCode = 400;
                 console.error(
                   `Status code ${req.statusCode}: Request body does not meet the requirements!`,
@@ -80,7 +87,10 @@ class RequestGet {
           req.on('end', () => {
             const bodyParsed = JSON.parse(body);
             res.end(() => {
-              if (!isData(bodyParsed)) {
+              if (!requestUrl?.match(urlReg)) {
+                req.statusCode = 404;
+                console.error(`Status code ${req.statusCode}: Can't process your request. Unknown url.`);
+              } else if (!isData(bodyParsed)) {
                 req.statusCode = 400;
                 console.error(
                   `Status code ${req.statusCode}: Request body does not meet the requirements!`,
@@ -118,7 +128,10 @@ class RequestGet {
           const data = this.dataStotage.getData();
           res.end(() => {
             const userIndex = data.findIndex((el) => el.id === userId);
-            if (urlEnd === 'users') {
+            if (!requestUrl?.match(urlReg)) {
+              req.statusCode = 404;
+              console.error(`Status code ${req.statusCode}: Can't process your request. Unknown url.`);
+            } else if (urlEnd === 'users') {
               req.statusCode = 400;
               console.error(`Status code ${req.statusCode}: Bad Request`);
             } else if (!(<string>userId)?.match(uuidReg)) {
