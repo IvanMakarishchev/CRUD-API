@@ -1,8 +1,8 @@
-import * as http from 'http';
-// import { getRequest } from './requests/get.ts';
-import { PORT } from '../constants/environment.ts';
+import http from 'http';
+import dotenv from 'dotenv';
 import { serverService } from '../utils/serverService.ts';
 import { getRequest } from './requests/get.ts';
+dotenv.config();
 
 export class CreateServer {
   private port: number;
@@ -12,10 +12,10 @@ export class CreateServer {
 
   startServer = () => {
     const server = http.createServer();
-    server.listen(this.port)
+    server.listen(this.port);
     serverService.setServer(server);
     getRequest.processGet();
   };
 }
 
-export const createServer = new CreateServer(PORT);
+export const createServer = new CreateServer(Number(process.env['SERVER_PORT']));
